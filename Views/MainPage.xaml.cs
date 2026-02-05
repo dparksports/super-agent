@@ -34,6 +34,33 @@ public sealed partial class MainPage : Page
         _ = _slackService.ConnectAsync();
 
         Messages.Add(new ChatMessage("Assistant", "Hello! I am OpenGemini. I use a Hybrid AI engine (Local + Gemini)."));
+        
+        _ = LoadGeminiModels();
+    }
+    
+    private async Task LoadGeminiModels()
+    {
+        if (_aiService is HybridAiService hybrid)
+        {
+            var models = await hybrid.CloudService.GetAvailableModelsAsync();
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                ModelSelector.ItemsSource = models;
+                if (models.Count > 0)
+                {
+                    ModelSelector.SelectedItem = hybrid.CloudService.CurrentModel; // auto-select default if in list
+                    if (ModelSelector.SelectedIndex == -1) ModelSelector.SelectedIndex = 0;
+                }
+            });
+        }
+    }
+
+    private void ModelSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (ModelSelector.SelectedItem is string model && _aiService is HybridAiService hybrid)
+        {
+            hybrid.CloudService.CurrentModel = model;
+        }
     }
 
     private void OnSlackMessageReceived(object? sender, string message)

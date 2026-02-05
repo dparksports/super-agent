@@ -12,8 +12,7 @@ namespace OpenClaw.Windows.Services;
 public class GoogleGeminiService : IAiService
 {
     private readonly HttpClient _httpClient;
-    private readonly string _apiKey;
-    private const string ModelId = "gemini-1.5-flash"; // Cost-effective and fast
+    private string _apiKey;
 
     public GoogleGeminiService()
     {
@@ -38,6 +37,43 @@ public class GoogleGeminiService : IAiService
             catch { /* Ignore config errors, api key remains empty */ }
         }
     }
+    public string CurrentModel { get; set; } = "gemini-1.5-flash";
+
+    public async Task<List<string>> GetAvailableModelsAsync()
+    {
+        if (string.IsNullOrEmpty(_apiKey)) return new List<string>();
+
+        var url = $"https://generativelanguage.googleapis.com/v1beta/models?key={_apiKey}";
+        try 
+        {
+            var json = await _httpClient.GetStringAsync(url);
+            using var doc = JsonDocument.Parse(json);
+            var models = new List<string>();
+            if (doc.RootElement.TryGetProperty("models", out var modelsElement))
+            {
+                foreach (var model in modelsElement.EnumerateArray())
+                {
+                    var name = model.GetProperty("name").GetString();
+                    // name is typically "models/gemini-pro", we want just "gemini-pro" usually, 
+                    // or we keep full name and strip "models/" for display? 
+                    // The generate API expects "models/gemini-pro" or just "gemini-pro" depending on version.
+                    // The error message said "models/gemini-1.5-flash is not found", implying it expects it without "models/" prefix or specific version.
+                    // Let's store the full resource name but strip "models/" for the ID we use in valid URLs if the URL structure is .../models/{modelId}:generate
+                    
+                    if (name != null && name.Contains("gemini"))
+                    {
+                        models.Add(name.Replace("models/", ""));
+                    }
+                }
+            }
+            return models;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to list models: {ex.Message}");
+            return new List<string> { "gemini-1.5-flash", "gemini-1.5-pro" }; // Fallback
+        }
+    }
 
     public async IAsyncEnumerable<string> GetStreamingResponseAsync(string systemPrompt, string userPrompt)
     {
@@ -60,7 +96,7 @@ public class GoogleGeminiService : IAiService
     {
          if (string.IsNullOrEmpty(_apiKey)) return "GEMINI_API_KEY missing";
 
-         var url = $"https://generativelanguage.googleapis.com/v1beta/models/{ModelId}:generateContent?key={_apiKey}";
+         var url = $"https://generativelanguage.googleapis.com/v1beta/models/{CurrentModel}:generateContent?key={_apiKey}";
          
          var requestBody = new
          {
