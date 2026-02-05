@@ -2,60 +2,41 @@
 
 ![Super Agent Screenshot](Assets/screenshot.png)
 
-Super Agent 🦸‍♂️ is a powerful, native Windows application that brings the power of **Google Gemini** and **Local On-Device AI** (via ONNX Runtime GenAI) to your desktop.
+**Super Agent 🦸‍♂️** is a powerful, native Windows application that brings the power of **Google Gemini** and **Local On-Device AI** to your desktop.
 
-It features a **Phase 1 "Super Agent"** architecture, giving the AI the ability to interact with your system while keeping you in full control.
+It is designed as a **Thinking Agent** with long-term memory and system control capabilities.
 
-## 🦾 Super Agent Features
+## 🧠 Brain Features (Phase 2)
 
-### 1. Expanded Action Space
-The agent can now "touch" the world, not just look at it:
-- **`write_file`**: Can create, edit, and overwrite files in your Documents folder.
-- **`run_powershell`**: Can execute system commands (e.g., `dotnet build`, `dir`, `ping`).
-- **`read_file`**: Securely read files from your Documents folder.
-- **`get_system_time`**: Check the local system time.
+### 1. Long-Term Memory (RAG)
+The agent never forgets. It uses a **Retrieval-Augmented Generation** system to recall past conversations.
+- **Embeddings**: Uses `gemini-embedding-004` to vectorize every message.
+- **Vector Database**: specific memories are stored in a local SQLite database (`messages.db`).
+- **Context Injection**: Relevant past information is automatically retrieved and provided to the agent before it answers.
 
-### 2. 🛡️ Human-in-the-Loop Safety System
-We believe in **Safe AI**. The agent is **incapable** of executing high-risk tools autonomously.
-- **Approval Required**: If the agent wants to write a file or run a command, it **pauses execution**.
-- **Transparency**: It clearly states usage: `⚠️ APPROVAL REQUIRED: run_powershell`.
-- **Control**: You must explicitly type **`yes`** or **`approve`** to authorize the action.
+### 2. Expanded Action Space (Phase 1)
+The agent can "touch" the world:
+- **`write_file`**: Can create and edit files in your Documents folder.
+- **`run_powershell`**: Can execute system commands.
+- **`read_file`**: Securely read files.
 
-### 3. Agentic Loop & Persistence
-- "Think-Act-Observe" loop allows for complex multi-step reasoning.
-- **SQLite Database** (`messages.db`) automatically saves your entire conversation history, including tool outputs and missed approvals.
+### 3. 🛡️ Human-in-the-Loop Safety
+The agent is **incapable** of executing high-risk tools autonomously.
+- **Approval Required**: Unsafe actions (like writing files) pause execution.
+- **Transparency**: You see exactly what tool is being requested.
+- **Control**: You must type **`yes`** to authorize the action.
 
 ## Getting Started
 
 ### Prerequisites
-
-- Windows 10 (1809+) or Windows 11
-- [.NET 8+ SDK](https://dotnet.microsoft.com/download)
+- Windows 10/11
+- [.NET 8 SDK](https://dotnet.microsoft.com/download)
 - [Google Gemini API Key](https://aistudio.google.com/)
 
 ### Installation
-
-1. Clone the repository.
-2. Set your API Key:
-   ```powershell
-   setx GEMINI_API_KEY "your_api_key_here"
-   ```
-3. Build and Run:
-   ```powershell
-   dotnet build
-   dotnet run
-   ```
-
-## Architecture
-
-- **AgentOrchestrator**: Manages the core loop and safety checks.
-- **GoogleGeminiService**: Handles multi-turn Agent/Function history.
-- **ToolRegistry**: Manages tool definitions (Unsafe vs Safe).
-- **ChatContextDb**: Local persistence layer.
+1. Clone the repo.
+2. Set API Key: `setx GEMINI_API_KEY "your_key"`
+3. Run: `dotnet run`
 
 ## License
-
-This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
-
----
-Made with ❤️ in California
+Apache License 2.0 - Made with ❤️ in California
