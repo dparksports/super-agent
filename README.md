@@ -1,6 +1,6 @@
 # OpenGemini for Windows
 
-![OpenGemini Screenshot](assets/screenshot.png)
+![OpenGemini Screenshot](Assets/screenshot.png)
 
 OpenGemini is a powerful, native Windows application that brings the power of **Google Gemini** and **Local On-Device AI** (via ONNX Runtime GenAI) to your desktop.
 
