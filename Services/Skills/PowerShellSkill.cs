@@ -39,11 +39,27 @@ namespace OpenClaw.Windows.Services.Skills
 
         public async Task<string> ExecuteAsync(Dictionary<string, object> arguments)
         {
-            var argsString = "";
-            if (arguments.ContainsKey("arguments"))
+            // Construct Arguments String
+            // We iterate over all keys in the dictionary and format them as "-Key Value"
+            // This handles { "city": "London" } => -city "London"
+            var argsBuilder = new System.Text.StringBuilder();
+
+            if (arguments.ContainsKey("arguments") && arguments.Count == 1) 
             {
-                argsString = arguments["arguments"]?.ToString() ?? "";
+               // Legacy single-string support
+               argsBuilder.Append(arguments["arguments"]?.ToString() ?? "");
             }
+            else
+            {
+                foreach (var kvp in arguments)
+                {
+                    // Escape quotes in value if needed
+                    var val = kvp.Value?.ToString()?.Replace("\"", "`\"") ?? "";
+                    argsBuilder.Append($"-{kvp.Key} \"{val}\" ");
+                }
+            }
+            
+            var argsString = argsBuilder.ToString().Trim();
             
             // Construct the Process
             var startInfo = new ProcessStartInfo
