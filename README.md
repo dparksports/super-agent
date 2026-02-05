@@ -1,70 +1,60 @@
 # Super Agent 🦸‍♂️
 
-![Super Agent Screenshot](Assets/screenshot.png)
+![Super Agent Dashboard](/super_agent_final_dashboard_1770282859819.png)
 
-**Super Agent 🦸‍♂️** is a next-generation AI agent for Windows, designed to be a **Thinking Partner** that lives on your desktop.
+**Super Agent** is a next-generation AI assistant for Windows that combines the power of cloud-based reasoning (Gemini 2.0 Flash) with the privacy and speed of local computing (OnnxRuntime, Windows Media OCR, Whisper.net).
 
-It combines the reasoning power of **Google Gemini** with native local capabilities, giving it long-term memory, system control, and internet access.
+It is designed to be your **proactive digital sidekick**, capable of remembering your context, browsing the web, and perceiving the world through vision and audio—independent of the cloud when needed.
 
-## 🚀 Key Capabilities
+## 🌟 Key Features
 
-### 1. 🧠 Long-Term Memory (RAG)
-The Super Agent never forgets. It uses a vector database to store and recall your conversations.
-- **Auto-Memorization**: Every interaction is vectorized and stored locally.
-- **Context Awareness**: Before answering, it searches its memory for relevant context.
-- **Privacy Focus**: Memories are stored in a local SQLite database (`messages.db`), not in the cloud.
+### 🧠 Hybrid AI Architecture
+- **Cloud Power**: Uses **Google Gemini 2.0 Flash** for complex reasoning, coding, and creative tasks.
+- **Local Speed**: Uses **Microsoft Phi-3 / Llama 3** (via ONNX) for fast, offline chat and simple queries.
+- **Smart Routing**: automatically routes requests to the best model based on complexity and privacy settings.
 
-### 2. 🌐 Web Access (New!)
-The agent is connected to the live internet.
-- **`web_search`**: Can search DuckDuckGo for real-time information.
-- **`read_web_page`**: Can read and analyze the content of any website.
-- **Zero-Config**: No extra API keys required for web search.
+### 💾 Long-Term Memory (RAG)
+- **Never Forgets**: Stores conversations and memories in a local SQLite vector database.
+- **Semantic Search**: Automatically retrieves relevant past interactions to provide context-aware answers.
+- **Privacy-First**: Your memories live on your device, not on a remote server.
 
-### 3. 🛠️ Action Space
-The agent can "touch" your system to get work done.
-- **Create Files**: Can write code, notes, and logs to your Documents folder.
-- **System Control**: Can execute PowerShell commands (with your permission).
-- **Safe by Design**: Dangerous actions require your explicit `yes` approval.
+### 🌐 Web & Research Capabilities
+- **Web Surfer**: Can search the web (Google/Bing) and read page content to answer current questions.
+- **Smart Parsing**: Intelligent extraction of article text, bypassing ads and clutter.
 
-## 📦 Installation
+### 👁️ Vision & Perception (Multi-Modal)
+- **Drag & Drop Vision**: Drop images into the chat to analyze them with Gemini Vision.
+- **Local OCR**: Extract text from images locally using Windows built-in OCR engine (offline & private).
+- **Local Whisper**: Transcribe audio and video files (`.wav`, `.mp4`) locally using `Whisper.net`.
+
+### 🛡️ Safety & Security
+- **Human-in-the-Loop**: Critical actions (like file system writes or PowerShell execution) require your explicit approval.
+- **Sandboxed**: File operations are restricted to your User Documents folder.
+
+## 🚀 Getting Started
 
 ### Prerequisites
-- Windows 10 or 11 (build 19041+)
-- [.NET 8 SDK](https://dotnet.microsoft.com/download)
-- [Google Gemini API Key](https://aistudio.google.com/)
+- Windows 10 (Build 19041) or higher.
+- [Gemini API Key](https://aistudio.google.com/) (Required for Cloud/Vision features).
 
-### Setup
-1.  **Clone the repository**:
-    ```powershell
-    git clone https://github.com/dparksports/super-agent.git
-    cd super-agent
-    ```
+### Installation
+1.  Clone this repository.
+2.  Open `super-agent.sln` in Visual Studio 2022.
+3.  Build and Run (F5).
+4.  On first launch, enter your Gemini API Key in `secrets.json` or environment variables.
+5.  *Optional*: Local models will be downloaded automatically on first use (~2GB for LLM, ~140MB for Whisper).
 
-2.  **Set your API Key**:
-    ```powershell
-    setx GEMINI_API_KEY "your_gemini_api_key_here"
-    ```
-    *(Restart your terminal after setting this)*
-
-3.  **Run the App**:
-    ```powershell
-    dotnet run
-    ```
-
-## 🏗️ Architecture
-
+## 🛠️ Tech Stack
 - **UI**: WinUI 3 (Windows App SDK)
-- **AI Model**: Google Gemini Pro (via REST API)
-- **Embeddings**: `text-embedding-004`
-- **Database**: SQLite (Microsoft.Data.Sqlite)
-- **Search**: HtmlAgilityPack + DuckDuckGo HTML
+- **Language**: C# / .NET 10
+- **AI Orchestration**: Semantic Kernel
+- **Local Inference**: ONNX Runtime GenAI, Whisper.net
+- **Database**: SQLite + Vector Embeddings
 
-## 🛡️ Safety
-
-Super Agent is designed with a **Human-in-the-Loop** safety architecture.
-- **Read-Only by Default**: The agent can read web pages and memory freely.
-- **Write Protected**: Any tool that modifies the system (`write_file`, `run_powershell`) triggers a safety interrupt.
-- **User Authority**: The agent halts and waits for user approval before proceeding with unsafe actions.
+## 🔮 Future Roadmap
+- [ ] **Real-time Voice Mode**: Talk to your agent naturally.
+- [ ] **Agentic Workflows**: Multi-step complex task execution.
+- [ ] **Plugin System**: Community-driven tools extensions.
 
 ---
-*Built with ❤️ in California.*
+*Built with ❤️ by AntiGravity*
