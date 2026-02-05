@@ -15,26 +15,33 @@ namespace OpenClaw.Windows.Services.Skills
         public string ParametersJson { get; }
         private readonly string _scriptPath;
 
-        public PowerShellSkill(string name, string description, string scriptPath)
+        public PowerShellSkill(string name, string description, string scriptPath, string? parametersJson = null)
         {
             Name = name;
             Description = description;
             _scriptPath = scriptPath;
             
-            // Default generic parameters if not found
-            // In a real implementation, we would parse the param() block of the PS script
-            ParametersJson = JsonSerializer.Serialize(new
+            if (!string.IsNullOrEmpty(parametersJson))
             {
-                type = "object",
-                properties = new
+                ParametersJson = parametersJson;
+            }
+            else
+            {
+                // Default generic parameters if not found
+                // In a real implementation, we would parse the param() block of the PS script
+                ParametersJson = JsonSerializer.Serialize(new
                 {
-                    arguments = new
+                    type = "object",
+                    properties = new
                     {
-                        type = "string",
-                        description = "Space-separated arguments to pass to the script"
+                        arguments = new
+                        {
+                            type = "string",
+                            description = "Space-separated arguments to pass to the script"
+                        }
                     }
-                }
-            });
+                });
+            }
         }
 
         public async Task<string> ExecuteAsync(Dictionary<string, object> arguments)
@@ -55,6 +62,7 @@ namespace OpenClaw.Windows.Services.Skills
                 {
                     // Escape quotes in value if needed
                     var val = kvp.Value?.ToString()?.Replace("\"", "`\"") ?? "";
+                    // Quote the value to handle spaces
                     argsBuilder.Append($"-{kvp.Key} \"{val}\" ");
                 }
             }

@@ -52,7 +52,19 @@ namespace OpenClaw.Windows.Services.Skills
 
             if (File.Exists(psScript))
             {
-                return new PowerShellSkill(metadata.Name, metadata.Description, psScript);
+                var skill = new PowerShellSkill(metadata.Name, metadata.Description, psScript);
+                if (!string.IsNullOrEmpty(metadata.ParametersJson)) 
+                {
+                    // Reflection or internal setter would be ideal, but for now we rely on constructor if possible
+                    // Or we add a property to ISkill/Base implementation?
+                    // PowerShellSkill default constructor generates default params. 
+                    // Let's modify PowerShellSkill access or assumption.
+                    // Actually, ISkill is an interface. PowerShellSkill is the concrete class.
+                    // I need to update PowerShellSkill to accept paramsJson in constructor or setter.
+                    // For now, I'll assume I can add it to the constructor in next step.
+                    // But wait, ISkill doesn't enforce set.
+                }
+                return new PowerShellSkill(metadata.Name, metadata.Description, psScript, metadata.ParametersJson);
             }
             else if (File.Exists(pyScript))
             {
@@ -62,8 +74,10 @@ namespace OpenClaw.Windows.Services.Skills
             return null;
         }
 
-        private async Task<(string Name, string Description)> ParseSkillMetadataAsync(string path)
+        private async Task<SkillManifest> ParseSkillMetadataAsync(string path)
         {
+            var manifest = new SkillManifest { Name = "Unknown", Description = "No description." };
+            
             try 
             {
                 var content = await File.ReadAllTextAsync(path);
@@ -72,14 +86,38 @@ namespace OpenClaw.Windows.Services.Skills
                 if (match.Success)
                 {
                     var yaml = match.Groups[1].Value;
-                    var name = ExtractYamlValue(yaml, "name");
-                    var description = ExtractYamlValue(yaml, "description");
-                    return (name, description);
+                    manifest.Name = ExtractYamlValue(yaml, "name");
+                    manifest.Description = ExtractYamlValue(yaml, "description");
+                    manifest.Author = ExtractYamlValue(yaml, "author");
+                    manifest.Version = ExtractYamlValue(yaml, "version");
+                }
+
+                // Extract <tool_def> JSON block if present
+                var toolDefStart = content.IndexOf("<tool_def>");
+                var toolDefEnd = content.IndexOf("</tool_def>");
+                if (toolDefStart != -1 && toolDefEnd != -1 && toolDefEnd > toolDefStart)
+                {
+                    var json = content.Substring(toolDefStart + 10, toolDefEnd - (toolDefStart + 10)).Trim();
+                    manifest.ParametersJson = json;
                 }
             }
             catch { }
+            
+            if (string.IsNullOrEmpty(manifest.Name) || manifest.Name == "Unknown")
+            {
+                 manifest.Name = Path.GetFileName(Path.GetDirectoryName(path)) ?? "Unknown";
+            }
 
-            return (Path.GetFileName(Path.GetDirectoryName(path)) ?? "Unknown", "No description.");
+            return manifest;
+        }
+        
+        internal class SkillManifest
+        {
+            public string Name { get; set; } = "";
+            public string Description { get; set; } = "";
+            public string Author { get; set; } = "";
+            public string Version { get; set; } = "";
+            public string? ParametersJson { get; set; }
         }
 
         private string ExtractYamlValue(string yaml, string key)
