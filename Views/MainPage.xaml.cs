@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
@@ -48,8 +49,14 @@ public sealed partial class MainPage : Page
                 ModelSelector.ItemsSource = models;
                 if (models.Count > 0)
                 {
-                    ModelSelector.SelectedItem = hybrid.CloudService.CurrentModel; // auto-select default if in list
-                    if (ModelSelector.SelectedIndex == -1) ModelSelector.SelectedIndex = 0;
+                    // Prefer Flash Lite, then 2.0 Flash, then 1.5 Flash
+                    var preferred = models.FirstOrDefault(m => m.Contains("flash-lite"))
+                                 ?? models.FirstOrDefault(m => m == "gemini-2.0-flash") 
+                                 ?? models.FirstOrDefault(m => m.Contains("flash")) 
+                                 ?? models.FirstOrDefault();
+                                 
+                    hybrid.CloudService.CurrentModel = preferred;
+                    ModelSelector.SelectedItem = preferred;
                 }
             });
         }

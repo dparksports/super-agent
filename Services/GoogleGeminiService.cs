@@ -37,7 +37,7 @@ public class GoogleGeminiService : IAiService
             catch { /* Ignore config errors, api key remains empty */ }
         }
     }
-    public string CurrentModel { get; set; } = "gemini-1.5-flash";
+    public string CurrentModel { get; set; } = "gemini-2.0-flash-lite";
 
     public async Task<List<string>> GetAvailableModelsAsync()
     {
@@ -60,13 +60,13 @@ public class GoogleGeminiService : IAiService
                     // The error message said "models/gemini-1.5-flash is not found", implying it expects it without "models/" prefix or specific version.
                     // Let's store the full resource name but strip "models/" for the ID we use in valid URLs if the URL structure is .../models/{modelId}:generate
                     
-                    if (name != null && name.Contains("gemini"))
+                    if (name != null && name.Contains("gemini") && !name.Contains("embedding") && !name.Contains("robotics") && !name.Contains("competitor"))
                     {
                         models.Add(name.Replace("models/", ""));
                     }
                 }
             }
-            return models;
+            return models.OrderByDescending(m => m).ToList(); // Newest versions first usually
         }
         catch (Exception ex)
         {
