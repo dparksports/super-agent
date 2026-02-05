@@ -29,7 +29,8 @@ namespace OpenClaw.Windows
                 .ConfigureServices((context, services) =>
                 {
                     services.AddSingleton<Services.OnnxLocalAiService>();
-                services.AddSingleton<ISlackService, SlackService>();
+                    services.AddSingleton<Services.GoogleGeminiService>();
+                    services.AddSingleton<ISlackService, SlackService>();
                     services.AddSingleton<Services.IAiService, Services.HybridAiService>();
                 })
                 .Build();

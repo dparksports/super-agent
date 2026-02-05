@@ -7,10 +7,12 @@ namespace OpenClaw.Windows.Services;
 public class HybridAiService : IAiService
 {
     private readonly OnnxLocalAiService _localService;
+    private readonly GoogleGeminiService _cloudService;
 
-    public HybridAiService(OnnxLocalAiService localService)
+    public HybridAiService(OnnxLocalAiService localService, GoogleGeminiService cloudService)
     {
         _localService = localService;
+        _cloudService = cloudService;
     }
 
     public async IAsyncEnumerable<string> GetStreamingResponseAsync(string systemPrompt, string userPrompt)
@@ -27,10 +29,11 @@ public class HybridAiService : IAiService
         }
         else
         {
-             yield return "[Gemini] ✨ (Simulated) ";
-             // Placeholder for real Gemini implementation
-             await Task.Delay(500);
-             yield return $"Simulated Gemini response to: {userPrompt}";
+             yield return "[Gemini] ✨ ";
+             await foreach (var chunk in _cloudService.GetStreamingResponseAsync(systemPrompt, userPrompt))
+             {
+                 yield return chunk;
+             }
         }
     }
 
