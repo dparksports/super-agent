@@ -172,7 +172,9 @@ namespace OpenClaw.Windows
             _trayIcon = null;
 
             // Force Application Exit
-            Application.Current.Exit();
+            // Application.Current.Exit() can sometimes be blocked by background threads or message loops in WinUI 3.
+            // Environment.Exit(0) ensures the process terminates immediately.
+            Environment.Exit(0);
         }
 
         // Simple RelayCommand helper
