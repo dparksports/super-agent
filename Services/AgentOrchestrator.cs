@@ -282,15 +282,59 @@ namespace OpenClaw.Windows.Services
 
             foreach (var msg in chatMessages)
             {
-                // Simple mapping. Complex history with previous function calls is lost here 
-                // unless we enhance ChatMessage to store it. 
-                // For this task, we assume history is mainly text context.
-                
-                string role = msg.Role.ToLower() == "user" ? "user" : "model";
-                
-                // Skip system messages if needed, or map to user/model instructions
-                if (msg.Role == "System" || msg.Role == "Tool") continue; 
+                if (msg.Role == "System") continue; // Skip system messages for now
 
+                if (msg.Role == "Tool")
+                {
+                    // Map "Tool" role to Gemini "function" role
+                    if (!string.IsNullOrEmpty(msg.ToolCallId))
+                    {
+                        history.Add(new GeminiContent
+                        {
+                            Role = "function",
+                            Parts = new List<GeminiPart> 
+                            { 
+                                new GeminiPart 
+                                { 
+                                    FunctionResponse = new GeminiFunctionResponse
+                                    {
+                                        Name = msg.ToolCallId,
+                                        Response = new { content = msg.Content }
+                                    }
+                                } 
+                            }
+                        });
+                    }
+                    continue;
+                }
+
+                // Handle Model (possibly Function Call) vs Model (Text)
+                if (msg.Role == "Model" && !string.IsNullOrEmpty(msg.ToolCallId))
+                {
+                    // Reconstruct a placeholder Function Call
+                    // Note: We currently don't store the original JSON args in the DB, only that a call occurred.
+                    // We pass empty args {} to satisfy the schema. 
+                    // In the future, we should store the JSON args in the Content field or a dedicated column.
+                    history.Add(new GeminiContent
+                    {
+                        Role = "model",
+                        Parts = new List<GeminiPart> 
+                        { 
+                            new GeminiPart 
+                            { 
+                                FunctionCall = new GeminiFunctionCall
+                                {
+                                    Name = msg.ToolCallId,
+                                    Args = new { } 
+                                }
+                            } 
+                        }
+                    });
+                    continue;
+                }
+
+                // Standard Text Message (User or Model)
+                string role = msg.Role.ToLower() == "user" ? "user" : "model";
                 history.Add(new GeminiContent
                 {
                     Role = role,

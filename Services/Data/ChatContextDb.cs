@@ -73,8 +73,8 @@ namespace OpenClaw.Windows.Services.Data
             var command = connection.CreateCommand();
             command.CommandText = 
             @"
-                SELECT Role, Content FROM (
-                    SELECT Role, Content, Timestamp FROM Messages
+                SELECT Role, Content, ToolCallId, Timestamp FROM (
+                    SELECT Role, Content, ToolCallId, Timestamp FROM Messages
                     ORDER BY Timestamp DESC
                     LIMIT $count
                 )
@@ -86,8 +86,16 @@ namespace OpenClaw.Windows.Services.Data
             while (await reader.ReadAsync())
             {
                 var role = reader.GetString(0);
-                var content = reader.GetString(1);
-                messages.Add(new ChatMessage(role, content));
+                var content = reader.IsDBNull(1) ? "" : reader.GetString(1);
+                var toolCallId = reader.IsDBNull(2) ? null : reader.GetString(2);
+                var timestampStr = reader.GetString(3);
+
+                var msg = new ChatMessage(role, content)
+                {
+                    ToolCallId = toolCallId ?? "",
+                    Timestamp = DateTime.Parse(timestampStr)
+                };
+                messages.Add(msg);
             }
 
             return messages;

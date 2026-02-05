@@ -22,5 +22,15 @@ public partial class ChatMessage : ObservableObject
     {
         this.role = role ?? "";
         this.content = content ?? "";
+        this.Timestamp = System.DateTime.Now;
     }
+
+    private string toolCallId;
+    public string ToolCallId
+    {
+        get => toolCallId;
+        set => SetProperty(ref toolCallId, value);
+    }
+    
+    public System.DateTime Timestamp { get; set; }
 }

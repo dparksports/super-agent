@@ -27,6 +27,19 @@ namespace OpenClaw.Windows.Models
         [JsonPropertyName("functionResponse")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public GeminiFunctionResponse? FunctionResponse { get; set; }
+
+        [JsonPropertyName("inlineData")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public GeminiInlineData? InlineData { get; set; }
+    }
+
+    public class GeminiInlineData
+    {
+        [JsonPropertyName("mimeType")]
+        public string MimeType { get; set; } = "image/jpeg";
+
+        [JsonPropertyName("data")]
+        public string Data { get; set; } = "";
     }
 
     public class GeminiFunctionCall
