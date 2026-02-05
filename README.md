@@ -2,46 +2,69 @@
 
 ![Super Agent Screenshot](Assets/screenshot.png)
 
-**Super Agent 🦸‍♂️** is a powerful, native Windows application that brings the power of **Google Gemini** and **Local On-Device AI** to your desktop.
+**Super Agent 🦸‍♂️** is a next-generation AI agent for Windows, designed to be a **Thinking Partner** that lives on your desktop.
 
-It is designed as a **Thinking Agent** with long-term memory, system control, and internet access.
+It combines the reasoning power of **Google Gemini** with native local capabilities, giving it long-term memory, system control, and internet access.
 
-## 🧠 Brain Features (Phase 2)
+## 🚀 Key Capabilities
 
-### 1. Long-Term Memory (RAG)
-The agent never forgets. It uses a **Retrieval-Augmented Generation** system to recall past conversations.
-- **Embeddings**: Uses `gemini-embedding-004` to vectorize every message.
-- **Vector Database**: Memories are stored in a local SQLite database (`messages.db`).
-- **Context Injection**: Relevant past information is automatically retrieved and provided to the agent before it answers.
+### 1. 🧠 Long-Term Memory (RAG)
+The Super Agent never forgets. It uses a vector database to store and recall your conversations.
+- **Auto-Memorization**: Every interaction is vectorized and stored locally.
+- **Context Awareness**: Before answering, it searches its memory for relevant context.
+- **Privacy Focus**: Memories are stored in a local SQLite database (`messages.db`), not in the cloud.
 
-### 2. Expanded Action Space (Phase 1)
-The agent can "touch" the world:
-- **`write_file`**: Can create and edit files in your Documents folder.
-- **`run_powershell`**: Can execute system commands.
-- **`read_file`**: Securely read files.
+### 2. 🌐 Web Access (New!)
+The agent is connected to the live internet.
+- **`web_search`**: Can search DuckDuckGo for real-time information.
+- **`read_web_page`**: Can read and analyze the content of any website.
+- **Zero-Config**: No extra API keys required for web search.
 
-### 3. Web Capabilities (Phase 3) 🌐
-The agent is connected to the live internet:
-- **`web_search`**: Searches the web for real-time information.
-- **`read_web_page`**: Reads and parses content from any URL into clean markdown.
+### 3. 🛠️ Action Space
+The agent can "touch" your system to get work done.
+- **Create Files**: Can write code, notes, and logs to your Documents folder.
+- **System Control**: Can execute PowerShell commands (with your permission).
+- **Safe by Design**: Dangerous actions require your explicit `yes` approval.
 
-### 4. 🛡️ Human-in-the-Loop Safety
-The agent is **incapable** of executing high-risk tools autonomously.
-- **Approval Required**: Unsafe actions (like writing files) pause execution.
-- **Transparency**: You see exactly what tool is being requested.
-- **Control**: You must type **`yes`** to authorize the action.
-
-## Getting Started
+## 📦 Installation
 
 ### Prerequisites
-- Windows 10/11
+- Windows 10 or 11 (build 19041+)
 - [.NET 8 SDK](https://dotnet.microsoft.com/download)
 - [Google Gemini API Key](https://aistudio.google.com/)
 
-### Installation
-1. Clone the repo.
-2. Set API Key: `setx GEMINI_API_KEY "your_key"`
-3. Run: `dotnet run`
+### Setup
+1.  **Clone the repository**:
+    ```powershell
+    git clone https://github.com/dparksports/super-agent.git
+    cd super-agent
+    ```
 
-## License
-Apache License 2.0 - Made with ❤️ in California
+2.  **Set your API Key**:
+    ```powershell
+    setx GEMINI_API_KEY "your_gemini_api_key_here"
+    ```
+    *(Restart your terminal after setting this)*
+
+3.  **Run the App**:
+    ```powershell
+    dotnet run
+    ```
+
+## 🏗️ Architecture
+
+- **UI**: WinUI 3 (Windows App SDK)
+- **AI Model**: Google Gemini Pro (via REST API)
+- **Embeddings**: `text-embedding-004`
+- **Database**: SQLite (Microsoft.Data.Sqlite)
+- **Search**: HtmlAgilityPack + DuckDuckGo HTML
+
+## 🛡️ Safety
+
+Super Agent is designed with a **Human-in-the-Loop** safety architecture.
+- **Read-Only by Default**: The agent can read web pages and memory freely.
+- **Write Protected**: Any tool that modifies the system (`write_file`, `run_powershell`) triggers a safety interrupt.
+- **User Authority**: The agent halts and waits for user approval before proceeding with unsafe actions.
+
+---
+*Built with ❤️ in California.*
