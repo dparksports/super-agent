@@ -59,4 +59,4 @@ It is designed to be your **proactive digital sidekick**, capable of remembering
 - [ ] **Plugin System**: Community-driven tools extensions.
 
 ---
-*Built with ❤️ in California*
+*Made with ❤️ in California*
