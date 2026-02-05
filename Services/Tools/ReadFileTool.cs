@@ -10,6 +10,7 @@ namespace OpenClaw.Windows.Services.Tools
         public string Name => "read_file";
 
         public string Description => "Reads the contents of a text file from the user's Documents folder. The path should be relative to the Documents folder or an absolute path within it.";
+        public bool IsUnsafe => false;
 
         public object Parameters => new
         {

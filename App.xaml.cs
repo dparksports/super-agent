@@ -42,6 +42,8 @@ namespace OpenClaw.Windows
                     services.AddSingleton<Services.AgentOrchestrator>();
                     services.AddSingleton<IAiTool, Services.Tools.GetSystemTimeTool>();
                     services.AddSingleton<IAiTool, Services.Tools.ReadFileTool>();
+                    services.AddSingleton<IAiTool, Services.Tools.WriteFileTool>();
+                    services.AddSingleton<IAiTool, Services.Tools.PowerShellTool>();
                     
                     services.AddSingleton<Services.IAiService, Services.HybridAiService>();
                 })

@@ -34,8 +34,57 @@ namespace OpenClaw.Windows.Services
             return await _db.GetRecentMessagesAsync(20);
         }
 
+        private OpenClaw.Windows.Models.FunctionCall? _pendingToolCall;
+
         public async IAsyncEnumerable<string> ChatAsync(string userMessage, ObservableCollection<ChatMessage> messageHistory)
         {
+            // 0. Check for Pending Tool Approval
+            if (_pendingToolCall != null)
+            {
+                var pendingCall = _pendingToolCall;
+                _pendingToolCall = null; // Clear state
+
+                bool isApproved = userMessage.Trim().ToLower() == "yes" || userMessage.Trim().ToLower() == "approve";
+                
+                if (!isApproved)
+                {
+                     yield return $"[Agent] ❌ Tool execution denied.\n";
+                     await _db.SaveMessageAsync("Tool", "User denied execution.", pendingCall.Name);
+
+                     // Continue the loop with the denial response
+                     // We need to reconstruct the history up to the point of the call
+                     // Since ChatAsync is stateless per call regarding local variables, we rely on the DB/MessageHistory
+                }
+                else
+                {
+                     yield return $"[Agent] ✅ Tool approved. Executing...\n";
+                     
+                     // Execute the pending tool
+                     // But wait, the loop structure below starts fresh.
+                     // We need to jump straight to execution phase or inject the logic.
+                     // A cleaner way is to handle the *approval* as just another user message, 
+                     // but logically we want to resume the *agent's* intention.
+                     
+                     // REFACTOR STRATEGY: 
+                     // If we are approving, we just execute the tool and append the result. 
+                     // Then we let the normal loop pick up the history (which now has user:yes, tool:result).
+                     // But Gemini needs to see [Model: Call] -> [Tool: Result]. 
+                     // "User: Yes" confuses that sequence if we are not careful.
+                     
+                     // SIMPLIFIED:
+                     // If approved, we execute the tool immediately here, save the result, and THEN start the loop.
+                     // The loop will load history which includes the new Tool Result, so Gemini picks up from there.
+                     
+                     var tool = _toolRegistry.GetTool(pendingCall.Name);
+                     string result;
+                     try { result = await tool.ExecuteAsync(pendingCall.JsonArgs); }
+                     catch (Exception ex) { result = $"Error: {ex.Message}"; }
+
+                     await _db.SaveMessageAsync("Tool", result, pendingCall.Name);
+                     yield return $"[Agent]  ✅ Result: {Shorten(result)}\n";
+                }
+            }
+
             // 1. Build initial history from ChatMessage collection
             var geminiHistory = BuildGeminiHistory(messageHistory);
 
@@ -65,6 +114,25 @@ namespace OpenClaw.Windows.Services
                     // For each tool call
                     foreach (var call in response.FunctionCalls)
                     {
+                        var tool = _toolRegistry.GetTool(call.Name);
+                        if (tool == null) 
+                        {
+                            await _db.SaveMessageAsync("Tool", "Tool not found", call.Name);
+                            continue;
+                        }
+
+                        // SAFETY CHECK
+                        if (tool.IsUnsafe)
+                        {
+                            _pendingToolCall = call;
+                            // Add the Model's intent to history (so next time we see it asked)
+                            await _db.SaveMessageAsync("Model", "", call.Name); 
+                            
+                            yield return $"[Agent] ⚠️ APPROVAL REQUIRED: {call.Name}\n";
+                            yield return $"[Agent] Type 'yes' to approve or 'no' to deny.\n";
+                            yield break; // STOP execution loop and wait for user input
+                        }
+                    
                         yield return $"[Agent]  🛠️ Executing {call.Name}...\n";
                         await _db.SaveMessageAsync("Model", "", call.Name); // Save tool call attempt (simplified)
 
@@ -109,6 +177,10 @@ namespace OpenClaw.Windows.Services
                     foreach (var call in response.FunctionCalls)
                     {
                         var tool = _toolRegistry.GetTool(call.Name);
+                        // Skip if unsafe/pending (already handled above via yield break)
+                        // Wait, if it WAS unsafe, we yielded break. 
+                        // So if we are here, it is SAFE.
+                        
                         string result;
 
                         if (tool != null)

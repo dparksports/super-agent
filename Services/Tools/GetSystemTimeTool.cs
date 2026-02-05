@@ -8,6 +8,7 @@ namespace OpenClaw.Windows.Services.Tools
         public string Name => "get_current_time";
         
         public string Description => "Returns the current local system time.";
+        public bool IsUnsafe => false;
 
         public object Parameters => new
         {
