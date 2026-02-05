@@ -15,7 +15,7 @@
   <mp:PhoneIdentity PhoneProductId="6db3302e-79c5-46ab-b2b3-6b42aca15a2d" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>OpenClaw.Windows</DisplayName>
+    <DisplayName>OpenGemini</DisplayName>
     <PublisherDisplayName>User Name</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
@@ -34,8 +34,8 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="$targetentrypoint$">
       <uap:VisualElements
-        DisplayName="OpenClaw.Windows"
-        Description="OpenClaw.Windows"
+        DisplayName="OpenGemini"
+        Description="OpenGemini"
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png">

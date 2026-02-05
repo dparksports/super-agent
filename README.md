@@ -1,8 +1,8 @@
-# OpenClaw (Windows Port) 🦞
+# OpenGemini 🦞
 
-A native Windows 11 implementation of the OpenClaw AI Assistant, featuring a Hybrid AI Engine (Local Phi-3 + Google Gemini) and Slack integration.
+A native Windows 11 implementation of the OpenGemini AI Assistant, featuring a Hybrid AI Engine (Local Phi-3 + Google Gemini) and Slack integration.
 
-![OpenClaw Screenshot](Assets/openclaw_screenshot.png)
+![OpenGemini Screenshot](Assets/opengemini_screenshot.png)
 
 ## Features
 
@@ -22,11 +22,11 @@ A native Windows 11 implementation of the OpenClaw AI Assistant, featuring a Hyb
 
 ### 🛠️ capabilities
 -   **Auto-Healing Model**: Automatically downloads the ~2.2GB Model if missing or corrupted.
--   **Resilient Downloads**: Verifies file integrity and supports resume/retry.
+-   **Resilient Downloads**: Verifies file integrity and supports resume/retry with real-time byte progress.
 -   **Copy Response**: One-click copy for AI responses.
 -   **Compact Mode**: Launches in a messenger-style vertical window.
 
-## unique Technical Details
+## Technical Details
 -   **Language**: C# / .NET 9
 -   **UI Framework**: WinUI 3 (Windows App SDK)
 -   **AI Runtime**: ONNX Runtime GenAI (DirectML)

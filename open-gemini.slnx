@@ -2,7 +2,7 @@
   <Folder Name="/Solution Items/">
     <File Path=".gitignore" />
   </Folder>
-  <Project Path="open-agent-gemini.csproj" />
+  <Project Path="open-gemini.csproj" />
     <Properties Name="Visual Studio">
         <!-- Support is provisionally available on Visual Studio 17.10 and later versions. -->
         <Property Name="OpenWith" Value="17" />

@@ -33,7 +33,7 @@ public sealed partial class MainPage : Page
         _slackService.MessageReceived += OnSlackMessageReceived;
         _ = _slackService.ConnectAsync();
 
-        Messages.Add(new ChatMessage("Assistant", "Hello! I am OpenClaw (Windows). I use a Hybrid AI engine (Local + Gemini)."));
+        Messages.Add(new ChatMessage("Assistant", "Hello! I am OpenGemini. I use a Hybrid AI engine (Local + Gemini)."));
     }
 
     private void OnSlackMessageReceived(object? sender, string message)
