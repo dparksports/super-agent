@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "OpenClaw.Windows (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "OpenClaw.Windows (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
