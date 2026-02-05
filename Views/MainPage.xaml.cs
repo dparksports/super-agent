@@ -178,6 +178,13 @@ public sealed partial class MainPage : Page
         ImagePreviewPanel.Visibility = Visibility.Collapsed;
     }
 
+    private async void ClearHistory_Click(object sender, RoutedEventArgs e)
+    {
+        await _agent.ClearHistoryAsync();
+        Messages.Clear();
+        Messages.Add(new ChatMessage("Assistant", "History cleared. Ready for a new task! ✨"));
+    }
+
     private async void InputGrid_DragOver(object sender, DragEventArgs e)
     {
         e.AcceptedOperation = global::Windows.ApplicationModel.DataTransfer.DataPackageOperation.Copy;

@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using OpenClaw.Windows.Services;
 using OpenClaw.Windows.Services.Data;
 using OpenClaw.Windows.Services.Tools;
-using OpenClaw.Windows.Services.Tools;
 using OpenClaw.Windows.Views;
 using H.NotifyIcon;
 using Microsoft.UI.Xaml.Controls;
@@ -108,7 +107,8 @@ namespace OpenClaw.Windows
         {
             _trayIcon = new H.NotifyIcon.TaskbarIcon
             {
-                IconSource = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(new Uri("ms-appx:///Assets/Square44x44Logo.targetsize-24_altform-unplated.png")),
+                // Use a more standard asset
+                IconSource = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(new Uri("ms-appx:///Assets/Square44x44Logo.scale-200.png")),
                 ToolTipText = "Super Agent 🦸‍♂️",
             };
             _trayIcon.LeftClickCommand = new StandardUICommand(StandardUICommandKind.None) { Command = new RelayCommand(() => ShowWindow()) };
@@ -161,7 +161,9 @@ namespace OpenClaw.Windows
             public RelayCommand(Action execute) => _execute = execute;
             public bool CanExecute(object? parameter) => true;
             public void Execute(object? parameter) => _execute();
+#pragma warning disable CS0067
             public event EventHandler? CanExecuteChanged;
+#pragma warning restore CS0067
         }
 
         /// <summary>

@@ -6,5 +6,6 @@ namespace OpenClaw.Windows.Models
     {
         public string? Text { get; set; }
         public List<FunctionCall>? FunctionCalls { get; set; }
+        public string? Source { get; set; } // "Gemini Flash", "Phi-3 Local", etc.
     }
 }

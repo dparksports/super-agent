@@ -36,6 +36,11 @@ namespace OpenClaw.Windows.Services
             return await _db.GetRecentMessagesAsync(20);
         }
 
+        public async Task ClearHistoryAsync()
+        {
+            await _db.ClearMessagesAsync();
+        }
+
         private OpenClaw.Windows.Models.FunctionCall? _pendingToolCall;
 
         public async IAsyncEnumerable<string> ChatAsync(string userMessage, ObservableCollection<ChatMessage> messageHistory, string? base64Image = null)
@@ -254,7 +259,17 @@ namespace OpenClaw.Windows.Services
                     if (response.Text != null)
                     {
                         await _db.SaveMessageAsync("Model", response.Text);
-                        yield return response.Text;
+                        
+                        // Add Source Indicator for the user
+                        if (currentTurn == 1) // Only on first turn? Or always?
+                        {
+                            // We can prepend a small badge
+                            yield return $"[☁️ Gemini] {response.Text}";
+                        }
+                        else
+                        {
+                            yield return response.Text;
+                        }
                     }
                     break;
                 }
@@ -269,14 +284,21 @@ namespace OpenClaw.Windows.Services
         private List<GeminiContent> BuildGeminiHistory(ObservableCollection<ChatMessage> chatMessages)
         {
             var history = new List<GeminiContent>();
+            var messages = chatMessages.ToList();
 
-            foreach (var msg in chatMessages)
+            for (int i = 0; i < messages.Count; i++)
             {
-                if (msg.Role == "System") continue; // Skip system messages for now
+                var msg = messages[i];
+                if (msg.Role == "System") continue;
 
                 if (msg.Role == "Tool")
                 {
-                    // Map "Tool" role to Gemini "function" role
+                    // Validation: A tool response must have had a preceding tool call.
+                    // However, we can't easily valid backwards without lookbehind.
+                    // But Gemini enforces: Model(Call) -> Function(Response).
+                    // If we just add function responses that are valid, it's fine, 
+                    // provided the *previous* turn was the call.
+                    
                     if (!string.IsNullOrEmpty(msg.ToolCallId))
                     {
                         history.Add(new GeminiContent
@@ -298,32 +320,49 @@ namespace OpenClaw.Windows.Services
                     continue;
                 }
 
-                // Handle Model (possibly Function Call) vs Model (Text)
                 if (msg.Role == "Model" && !string.IsNullOrEmpty(msg.ToolCallId))
                 {
-                    // Reconstruct a placeholder Function Call
-                    // Note: We currently don't store the original JSON args in the DB, only that a call occurred.
-                    // We pass empty args {} to satisfy the schema. 
-                    // In the future, we should store the JSON args in the Content field or a dedicated column.
-                    history.Add(new GeminiContent
+                    // This is a Function Call.
+                    // CRITICAL: We must check if the NEXT message is a Tool response for this ID.
+                    // If not, we skip this message, because sending a Call without a Response breaks the API.
+                    
+                    bool hasResponse = false;
+                    if (i + 1 < messages.Count)
                     {
-                        Role = "model",
-                        Parts = new List<GeminiPart> 
-                        { 
-                            new GeminiPart 
-                            { 
-                                FunctionCall = new GeminiFunctionCall
-                                {
-                                    Name = msg.ToolCallId,
-                                    Args = new { } 
-                                }
-                            } 
+                        var nextMsg = messages[i + 1];
+                        if (nextMsg.Role == "Tool" && nextMsg.ToolCallId == msg.ToolCallId)
+                        {
+                            hasResponse = true;
                         }
-                    });
+                    }
+
+                    if (hasResponse)
+                    {
+                        history.Add(new GeminiContent
+                        {
+                            Role = "model",
+                            Parts = new List<GeminiPart> 
+                            { 
+                                new GeminiPart 
+                                { 
+                                    FunctionCall = new GeminiFunctionCall
+                                    {
+                                        Name = msg.ToolCallId,
+                                        Args = new { } 
+                                    }
+                                } 
+                            }
+                        });
+                    }
+                    else
+                    {
+                        // Skip orphaned call
+                        System.Diagnostics.Debug.WriteLine($"[History] Skipped orphaned tool call: {msg.ToolCallId}");
+                    }
                     continue;
                 }
 
-                // Standard Text Message (User or Model)
+                // Standard Text
                 string role = msg.Role.ToLower() == "user" ? "user" : "model";
                 history.Add(new GeminiContent
                 {

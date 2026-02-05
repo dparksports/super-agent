@@ -21,8 +21,8 @@ namespace OpenClaw.Windows.Services
 
         private void OnCreated(object sender, FileSystemEventArgs e)
         {
-            // Simple filter: Ignore temporary or hidden files
-            if (e.Name.StartsWith("~$") || e.Name.StartsWith(".")) return;
+            // Simple filter: Ignore temporary or hidden files (null check)
+            if (string.IsNullOrEmpty(e.Name) || e.Name.StartsWith("~$") || e.Name.StartsWith(".")) return;
 
             FileDetected?.Invoke(this, e.FullPath);
         }
