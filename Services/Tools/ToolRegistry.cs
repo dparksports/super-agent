@@ -22,7 +22,7 @@ namespace OpenClaw.Windows.Services.Tools
             _tools[tool.Name] = tool;
         }
 
-        public IAiTool GetTool(string name)
+        public IAiTool? GetTool(string name)
         {
             if (string.IsNullOrEmpty(name)) return null;
             return _tools.TryGetValue(name, out var tool) ? tool : null;

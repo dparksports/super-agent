@@ -46,24 +46,33 @@ namespace OpenClaw.Windows.Services.Tools
                 htmlDoc.LoadHtml(html);
 
                 // Remove scripts, styles, metadata
-                foreach (var node in htmlDoc.DocumentNode.SelectNodes("//script|//style|//head|//iframe|//nav|//footer|//noscript") ?? new HtmlNodeCollection(null))
+                var nodesToRemove = htmlDoc.DocumentNode.SelectNodes("//script|//style|//head|//iframe|//nav|//footer|//noscript");
+                if (nodesToRemove != null)
                 {
-                    node.Remove();
+                    foreach (var node in nodesToRemove)
+                    {
+                        node.Remove();
+                    }
                 }
 
                 // Extract text from body
                 var sb = new StringBuilder();
-                foreach (var node in htmlDoc.DocumentNode.SelectNodes("//p|//h1|//h2|//h3|//h4|//li|//pre|//code") ?? new HtmlNodeCollection(null))
+                var textNodes = htmlDoc.DocumentNode.SelectNodes("//p|//h1|//h2|//h3|//h4|//li|//pre|//code");
+                
+                if (textNodes != null)
                 {
-                    var text = System.Net.WebUtility.HtmlDecode(node.InnerText).Trim();
-                    if (!string.IsNullOrWhiteSpace(text))
+                    foreach (var node in textNodes)
                     {
-                        // Add simple formatting hints
-                        if (node.Name.StartsWith("h")) sb.AppendLine($"# {text}");
-                        else if (node.Name == "li") sb.AppendLine($"- {text}");
-                        else sb.AppendLine(text);
-                        
-                        sb.AppendLine(); 
+                        var text = System.Net.WebUtility.HtmlDecode(node.InnerText).Trim();
+                        if (!string.IsNullOrWhiteSpace(text))
+                        {
+                            // Add simple formatting hints
+                            if (node.Name.StartsWith("h")) sb.AppendLine($"# {text}");
+                            else if (node.Name == "li") sb.AppendLine($"- {text}");
+                            else sb.AppendLine(text);
+                            
+                            sb.AppendLine(); 
+                        }
                     }
                 }
 

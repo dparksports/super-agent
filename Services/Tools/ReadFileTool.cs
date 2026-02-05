@@ -36,7 +36,7 @@ namespace OpenClaw.Windows.Services.Tools
                     return "Error: Missing 'file_path' argument.";
                 }
 
-                string inputPath = pathProp.GetString();
+                string inputPath = pathProp.GetString() ?? "";
                 if (string.IsNullOrWhiteSpace(inputPath))
                 {
                     return "Error: File path cannot be empty.";

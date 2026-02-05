@@ -9,7 +9,6 @@ namespace OpenClaw.Windows.Services;
 public class AgentService
 {
     private readonly Kernel _kernel;
-    private readonly IChatCompletionService _chatService;
     private readonly GoogleGeminiService _geminiService;
 
     public AgentService(GoogleGeminiService geminiService)

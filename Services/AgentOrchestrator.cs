@@ -78,12 +78,18 @@ namespace OpenClaw.Windows.Services
                      // The loop will load history which includes the new Tool Result, so Gemini picks up from there.
                      
                      var tool = _toolRegistry.GetTool(pendingCall.Name);
-                     string result;
-                     try { result = await tool.ExecuteAsync(pendingCall.JsonArgs); }
-                     catch (Exception ex) { result = $"Error: {ex.Message}"; }
-
-                     await _db.SaveMessageAsync("Tool", result, pendingCall.Name);
-                     yield return $"[Agent]  ✅ Result: {Shorten(result)}\n";
+                     if (tool != null)
+                     {
+                        string result;
+                        try { result = await tool.ExecuteAsync(pendingCall.JsonArgs); }
+                        catch (Exception ex) { result = $"Error: {ex.Message}"; }
+                        await _db.SaveMessageAsync("Tool", result, pendingCall.Name);
+                        yield return $"[Agent]  ✅ Result: {Shorten(result)}\n";
+                     }
+                     else
+                     {
+                         yield return $"[Agent] ❌ Tool not found: {pendingCall.Name}\n";
+                     }
                 }
             }
 
