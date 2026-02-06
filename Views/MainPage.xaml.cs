@@ -145,7 +145,30 @@ public sealed partial class MainPage : Page
         await dialog.ShowAsync();
     }
 
-    private async void RedownloadButton_Click(object sender, RoutedEventArgs e)
+    private async void SettingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var dialog = new SettingsDialog();
+                dialog.XamlRoot = this.XamlRoot;
+                await dialog.ShowAsync();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Settings Error: {ex}");
+                try
+                {
+                    var logPath = System.IO.Path.Combine(global::Windows.Storage.ApplicationData.Current.LocalFolder.Path, "settings_error.log");
+                    System.IO.File.AppendAllText(logPath, $"{DateTime.Now}: {ex}\n\n");
+                }
+                catch
+                {
+                    // Ignore logging errors to prevent cascading crashes
+                }
+            }
+        }
+
+        private async void RedownloadButton_Click(object sender, RoutedEventArgs e)
     {
         InputBox.IsEnabled = false;
         SendButton.IsEnabled = false;

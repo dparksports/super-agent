@@ -9,6 +9,7 @@ using H.NotifyIcon;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input; 
 using System;
+using System.Threading.Tasks;
 
 namespace OpenClaw.Windows
 {
@@ -60,6 +61,7 @@ namespace OpenClaw.Windows
                     services.AddSingleton<Services.ToastService>(); // Notifications
                     services.AddSingleton<Services.FileWatcherService>(); // File Sensor
                     services.AddSingleton<Services.Skills.SkillService>(); // Skill System
+                    services.AddSingleton<Services.FirebaseAnalyticsService>(); // Firebase Analytics
 
                     services.AddHostedService<Services.CoreAgentBackgroundService>(); // Background Heartbeat
 
@@ -73,7 +75,7 @@ namespace OpenClaw.Windows
         /// will be used such as when the application is launched to open a specific file.
         /// </summary>
         /// <param name="e">Details about the launch request and process.</param>
-        protected override void OnLaunched(LaunchActivatedEventArgs e)
+        protected override async void OnLaunched(LaunchActivatedEventArgs e)
         {
             window ??= new Window();
             window.Title = "OpenGemini";
@@ -105,7 +107,7 @@ namespace OpenClaw.Windows
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
             var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
             var appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
-            appWindow.Resize(new global::Windows.Graphics.SizeInt32(600, 700));
+            appWindow.Resize(new global::Windows.Graphics.SizeInt32(780, 700));
             
             window.Activate();
 
@@ -114,6 +116,89 @@ namespace OpenClaw.Windows
             
             // Handle Closing (Minimize to Tray)
             appWindow.Closing += AppWindow_Closing;
+
+            // Initialize Analytics
+            var analytics = Host.Services.GetRequiredService<Services.FirebaseAnalyticsService>();
+            _ = analytics.LogEventAsync("app_start");
+
+            // Check EULA
+            await CheckEulaAsync();
+        }
+
+        private async Task CheckEulaAsync()
+        {
+            bool isAccepted = Services.SettingsHelper.Get<bool>("EulaAccepted", false);
+            
+            try
+            {
+                var logPath = System.IO.Path.Combine(AppContext.BaseDirectory, "settings_debug.log");
+                System.IO.File.AppendAllText(logPath, $"{DateTime.Now}: Start CheckEulaAsync. Value: {isAccepted}\n");
+            }
+            catch {}
+
+            if (!isAccepted)
+            {
+                try
+                {
+                    var root = window.Content as Microsoft.UI.Xaml.FrameworkElement;
+                    if (root == null) return;
+
+                    // Wait for XamlRoot
+                    if (root.XamlRoot == null)
+                    {
+                        var tcs = new TaskCompletionSource<object?>();
+                        void OnLoaded(object s, Microsoft.UI.Xaml.RoutedEventArgs e) 
+                        {
+                            root.Loaded -= OnLoaded;
+                            tcs.TrySetResult(null);
+                        }
+                        root.Loaded += OnLoaded;
+
+                        if (root.XamlRoot != null) 
+                        {
+                            root.Loaded -= OnLoaded;
+                        }
+                        else
+                        {
+                             await Task.WhenAny(tcs.Task, Task.Delay(2000));
+                        }
+                    }
+
+                    if (root.XamlRoot == null)
+                    {
+                         try
+                         {
+                            var logPath = System.IO.Path.Combine(AppContext.BaseDirectory, "settings_debug.log");
+                            System.IO.File.AppendAllText(logPath, $"{DateTime.Now}: ERROR - XamlRoot is still null. Cannot show EULA.\n");
+                         }
+                         catch {}
+                         return; // Avoid crash
+                    }
+
+                    var dialog = new EulaDialog();
+                    dialog.XamlRoot = root.XamlRoot;
+                    
+                    var result = await dialog.ShowAsync();
+
+                    if (result == ContentDialogResult.Primary)
+                    {
+                        Services.SettingsHelper.Set("EulaAccepted", true);
+                    }
+                    else
+                    {
+                        ExitApp();
+                    }
+                }
+                catch (Exception ex)
+                {
+                     try
+                     {
+                        var logPath = System.IO.Path.Combine(AppContext.BaseDirectory, "settings_debug.log");
+                        System.IO.File.AppendAllText(logPath, $"{DateTime.Now}: EULA Dialog Error: {ex}\n");
+                     }
+                     catch {}
+                }
+            }
         }
 
         private H.NotifyIcon.TaskbarIcon? _trayIcon;
@@ -150,8 +235,9 @@ namespace OpenClaw.Windows
             if (_isExitTriggered) return; // Allow close if Exit was clicked
 
             // Cancel Close and Hide instead
-            args.Cancel = true;
-            sender.Hide();
+            // args.Cancel = true;
+            // sender.Hide();
+            ExitApp();
         }
 
         private void ShowWindow()

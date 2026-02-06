@@ -2,7 +2,7 @@
 
 ![Super Agent Dashboard](Assets/dashboard_v2.png)
 
-> **[📥 Download Latest Release](../../releases/latest)**
+> **[📥 Download v1.2 (Win-x64)](https://github.com/dparksports/open-gemini/releases/download/v1.2/SuperAgent-v1.2-win-x64.zip)**
 
 **Super Agent** is a next-generation AI assistant for Windows that combines the power of cloud-based reasoning (Gemini 2.0 Flash) with the privacy and speed of local computing.
 

@@ -62,6 +62,7 @@
             
             <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Margin="10,0,0,0">
                 <ComboBox x:Name="ModelSelector" PlaceholderText="Model" SelectionChanged="ModelSelector_SelectionChanged" Width="140" Margin="0,0,4,0"/>
+                <Button x:Name="SettingsButton" Content="⚙️" Click="SettingsButton_Click" ToolTipService.ToolTip="Settings" Margin="0,0,4,0"/>
                 <Button x:Name="SendButton" Content="Send" Click="SendButton_Click" Style="{StaticResource AccentButtonStyle}" Margin="0,0,4,0"/>
                 <Button x:Name="SkillsButton" Content="🧩" Click="SkillsButton_Click" ToolTipService.ToolTip="Manage Skills" Margin="0,0,4,0"/>
                 <Button Content="🗑️" Click="ClearHistory_Click" ToolTipService.ToolTip="Clear History" Margin="0,0,4,0" />
