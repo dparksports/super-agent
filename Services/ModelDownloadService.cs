@@ -8,7 +8,9 @@ namespace OpenClaw.Windows.Services;
 
 public class ModelDownloadService
 {
-    private const string BaseUrl = "https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-onnx/resolve/main/directml/directml-int4-awq-block-128/";
+    private readonly HttpClient _httpClient;
+    
+    // Most ONNX GenAI models need these files.
     private static readonly string[] RequiredFiles = 
     {
         "model.onnx",
@@ -20,15 +22,22 @@ public class ModelDownloadService
         "added_tokens.json"
     };
 
-    private readonly HttpClient _httpClient;
-
     public ModelDownloadService()
     {
         _httpClient = new HttpClient();
     }
 
-    public async Task DownloadModelAsync(string destinationFolder, IProgress<string>? statusProgress, IProgress<double>? downloadProgress)
+    public async Task DownloadModelAsync(OpenClaw.Windows.Models.ModelConfig modelConfig, IProgress<string>? statusProgress, IProgress<double>? downloadProgress)
     {
+        string destinationFolder = modelConfig.GetLocalPath();
+        
+        // Base URL construction for Hugging Face "resolve/main"
+        // Valid input RepoUrl: "https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-onnx"
+        // We need to append "/resolve/main/directml/directml-int4-awq-block-128/" or similar based on the model.
+        // For simplicity, we will assume RepoUrl in ModelConfig IS the base DirectML folder URL.
+        string baseUrl = modelConfig.RepoUrl;
+        if (!baseUrl.EndsWith("/")) baseUrl += "/";
+
         if (!Directory.Exists(destinationFolder))
         {
             Directory.CreateDirectory(destinationFolder);
@@ -42,7 +51,7 @@ public class ModelDownloadService
         foreach (var fileName in RequiredFiles)
         {
             string filePath = Path.Combine(destinationFolder, fileName);
-            string url = BaseUrl + fileName;
+            string url = baseUrl + fileName;
 
             long? expectedSize = null;
             try 

@@ -11,14 +11,14 @@ namespace OpenClaw.Windows.Services
 {
     public class AgentOrchestrator
     {
-        private readonly GoogleGeminiService _geminiService;
+        private readonly IAiService _aiService;
         private readonly ToolRegistry _toolRegistry;
         private readonly Data.ChatContextDb _db;
         private readonly MemoryService _memoryService;
 
-        public AgentOrchestrator(GoogleGeminiService geminiService, ToolRegistry toolRegistry, Data.ChatContextDb db, MemoryService memoryService)
+        public AgentOrchestrator(IAiService aiService, ToolRegistry toolRegistry, Data.ChatContextDb db, MemoryService memoryService)
         {
-            _geminiService = geminiService;
+            _aiService = aiService;
             _toolRegistry = toolRegistry;
             _db = db;
             _memoryService = memoryService;
@@ -133,8 +133,8 @@ namespace OpenClaw.Windows.Services
             {
                 currentTurn++;
 
-                // Call Gemini
-                var response = await _geminiService.GenerateContentAsync(geminiHistory);
+                // Call AI Service (Hybrid -> Local or Cloud)
+                var response = await _aiService.GenerateContentAsync(geminiHistory);
 
                 // Check for Tool Calls
                 if (response.FunctionCalls != null && response.FunctionCalls.Any())

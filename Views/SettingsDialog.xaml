@@ -62,6 +62,55 @@
 
         <MenuFlyoutSeparator />
 
+        <!-- AI Model Section -->
+        <StackPanel Spacing="10">
+            <TextBlock Text="🧠 AI Model" Style="{ThemeResource SubtitleTextBlockStyle}" />
+            
+            <ComboBox x:Name="ModelComboBox" 
+                      Header="Select Model" 
+                      HorizontalAlignment="Stretch"
+                      SelectionChanged="ModelComboBox_SelectionChanged">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel>
+                            <TextBlock Text="{Binding Name}" FontWeight="Bold" />
+                            <TextBlock Text="{Binding Description}" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+
+            <!-- VRAM Use Bar -->
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TextBlock Text="VRAM Usage" Style="{ThemeResource CaptionTextBlockStyle}" />
+                <TextBlock x:Name="VramStatsText" Text="0 / 0 GB" Style="{ThemeResource CaptionTextBlockStyle}" HorizontalAlignment="Right" />
+                
+                <ProgressBar x:Name="VramProgressBar" Grid.Row="1" Maximum="100" Value="0" Height="10" Margin="0,5,0,0" />
+            </Grid>
+            <TextBlock x:Name="VramWarningText" Text="" Foreground="Red" Style="{ThemeResource CaptionTextBlockStyle}" Visibility="Collapsed" TextWrapping="Wrap" />
+
+            <!-- Action Buttons -->
+             <Button x:Name="DownloadModelButton" 
+                    Content="Download Model" 
+                    Click="DownloadModelButton_Click"
+                    HorizontalAlignment="Stretch" 
+                    Style="{ThemeResource AccentButtonStyle}"/>
+            
+            <ProgressBar x:Name="DownloadProgressBar" Maximum="100" Value="0" Visibility="Collapsed" />
+            <TextBlock x:Name="DownloadStatusText" Text="" Style="{ThemeResource CaptionTextBlockStyle}" HorizontalAlignment="Center" Visibility="Collapsed" />
+            
+             <TextBlock Text="Models are optimized for DirectML (ONNX) and run locally." 
+                       Style="{ThemeResource CaptionTextBlockStyle}" 
+                       Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" 
+                       TextWrapping="Wrap" />
+        </StackPanel>
+
+        <MenuFlyoutSeparator />
+
         <!-- Testing / Debugging Section -->
         <StackPanel Spacing="10">
             <TextBlock Text="🐛 Debugging" Style="{ThemeResource SubtitleTextBlockStyle}" />

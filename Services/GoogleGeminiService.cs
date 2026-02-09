@@ -268,6 +268,7 @@ Made with â¤ï¸ in California";
     }
 
     Task IAiService.RedownloadModelAsync() => Task.CompletedTask;
+    Task IAiService.SwitchModelAsync(string modelPath) => Task.CompletedTask; // Cloud service doesn't switch local models
 
     /// <summary>
     /// Builds the full system prompt by combining the base prompt with the user's guide.md if it exists.

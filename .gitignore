@@ -121,3 +121,8 @@ app.manifest
 # Antigravity
 .gemini/
 secrets.json
+
+# Archives and build logs
+*.zip
+build*.txt
+build*.log
