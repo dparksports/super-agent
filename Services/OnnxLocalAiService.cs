@@ -104,41 +104,13 @@ public class OnnxLocalAiService : IAiService, IDisposable
         await _initLock.WaitAsync();
         try
         {
-            // Delete existing model files to force re-download
-            if (Directory.Exists(_modelPath))
-            {
-                // We can't delete the directory if the model is loaded and locking files.
-                // Disposition is needed.
-                _model?.Dispose();
-                _tokenizer?.Dispose();
-                _model = null;
-                _tokenizer = null;
-                _isInitialized = false;
-
-                try 
-                {
-                    Directory.Delete(_modelPath, true); 
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Error deleting model directory: {ex.Message}");
-                    // Could be locked, but we'll try to download over it or handle it.
-                }
-            }
+            _model?.Dispose();
+            _tokenizer?.Dispose();
+            _model = null;
+            _tokenizer = null;
+            _isInitialized = false;
             
-            var downloadService = new ModelDownloadService();
-             
-             var progressReporter = new Progress<double>(p => 
-             {
-                 DownloadProgressChanged?.Invoke("Downloading Model...", p);
-             });
-
-             await downloadService.DownloadModelAsync(_modelPath, null, progressReporter);
-
-             // Re-initialize
-            _model = new Model(_modelPath);
-            _tokenizer = new Tokenizer(_model);
-            _isInitialized = true;
+            throw new NotSupportedException("Please use the Settings menu to download models.");
         }
         finally
         {
@@ -163,7 +135,7 @@ public class OnnxLocalAiService : IAiService, IDisposable
     public Task<OpenClaw.Windows.Models.AgentResponse> GenerateContentAsync(List<OpenClaw.Windows.Models.GeminiContent> history)
     {
         // Local model doesn't support full history yet, just use the last user message
-        var lastMessage = history.Count > 0 ? history[^1].Parts[0].Text : "";
+        var lastMessage = history.Count > 0 && history[^1].Parts.Count > 0 ? history[^1].Parts[0].Text ?? "" : "";
         return GenerateContentAsync(lastMessage);
     }
 
