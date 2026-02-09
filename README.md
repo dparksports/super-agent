@@ -4,7 +4,7 @@
 
 > **[📥 Download v1.2.1 (Win-x64)](https://github.com/dparksports/open-gemini/releases/download/v1.2.1/super-agent-v1.2.1-win-x64.zip)**
 
-**Super Agent** is a next-generation AI assistant for Windows that combines the power of cloud-based reasoning (Gemini 2.0 Flash) with the privacy and speed of local computing.
+**Super Agent** is a next-generation AI assistant for Windows that combines the power of cloud-based reasoning with the privacy and speed of local inferencing.
 
 It is designed to be your **proactive digital sidekick**, living in your system tray, watching your files, and extending its capabilities through a dynamic skill system—compatible with the OpenClaw ecosystem.
 
@@ -16,8 +16,8 @@ It is designed to be your **proactive digital sidekick**, living in your system 
 - **Hot-Reload**: Add new skills on the fly without restarting the agent.
 
 ### 🧠 Hybrid AI Architecture
-- **Cloud Power**: Uses **Google Gemini 2.0 Flash** for complex reasoning, coding, and creative tasks.
-- **Local Speed**: Uses **Microsoft Phi-3 / Llama 3** (via ONNX) for fast, offline chat and simple queries.
+- **Cloud Power**: Uses **Google/Azure/OpenAI/Grok** for complex reasoning, coding, and creative tasks.
+- **Local Speed**: Uses SOTA Local LLMs for fast, offline chat and simple queries.
 - **Smart Routing**: Automatically routes requests to the best model based on complexity and privacy settings.
 
 ### 🤖 Autonomous & Proactive
@@ -31,8 +31,8 @@ It is designed to be your **proactive digital sidekick**, living in your system 
 - **Privacy-First**: Your memories live on your device, not on a remote server.
 
 ### 👁️ Vision & Perception
-- **Drag & Drop Vision**: Drop images into the chat to analyze them with Gemini Vision.
-- **Local OCR**: Extract text from images locally using Windows built-in OCR engine (offline & private).
+- **Drag & Drop Vision**: Drop images into the chat to analyze them with LVM.
+- **Local OCR**: Extract text from images locally using LVM (offline & private).
 - **Local Whisper**: Transcribe audio/video files locally.
 
 ## 🚀 Getting Started
