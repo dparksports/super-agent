@@ -54,6 +54,15 @@ namespace OpenClaw.Windows
                     services.AddSingleton<IAiTool, Services.Tools.ReadTextFromImageTool>();
                     services.AddSingleton<IAiTool, Services.Tools.TranscribeAudioTool>();
                     
+                    // Autonomous Agent Tools (Phase A-F)
+                    services.AddSingleton<Services.VenvManagerService>(); // Shared venv for Python tools
+                    services.AddSingleton<IAiTool, Services.Tools.RunPythonTool>();
+                    services.AddSingleton<IAiTool, Services.Tools.PipInstallTool>();
+                    services.AddSingleton<IAiTool, Services.Tools.BrowseWebTool>();
+                    services.AddSingleton<IAiTool, Services.Tools.VoipCallTool>();
+                    services.AddSingleton<IAiTool, Services.Tools.SendMessageTool>();
+                    services.AddSingleton<IAiTool, Services.Tools.CreateSkillTool>();
+
                     services.AddSingleton<Services.EmbeddingService>();
                     services.AddSingleton<Services.MemoryService>();
                     services.AddSingleton<Services.OcrService>(); // Local OCR
@@ -77,6 +86,9 @@ namespace OpenClaw.Windows
         /// <param name="e">Details about the launch request and process.</param>
         protected override async void OnLaunched(LaunchActivatedEventArgs e)
         {
+            var logPath = System.IO.Path.Combine(AppContext.BaseDirectory, "startup_debug.log");
+            System.IO.File.AppendAllText(logPath, $"{DateTime.Now}: OnLaunched Started\n");
+
             window ??= new Window();
             window.Title = "Super Agent 🦸‍♂️";
 
@@ -87,22 +99,37 @@ namespace OpenClaw.Windows
                 window.Content = rootFrame;
             }
 
+            System.IO.File.AppendAllText(logPath, $"{DateTime.Now}: Window Created\n");
+
             // Initialize Skills
             var skillService = Host.Services.GetRequiredService<Services.Skills.SkillService>();
             var toolRegistry = Host.Services.GetRequiredService<Services.Tools.ToolRegistry>();
             
+            System.IO.File.AppendAllText(logPath, $"{DateTime.Now}: Services Retrieved\n");
+
             // Fire and forget, but ideally we wait. Since it's local I/O it's fast.
-            Task.Run(async () => 
+            _ = Task.Run(async () => 
             {
-                await skillService.RefreshSkillsAsync();
-                foreach (var skill in skillService.GetSkills())
+                try 
                 {
-                    toolRegistry.RegisterTool(new Services.Skills.SkillAdapter(skill));
+                    System.IO.File.AppendAllText(logPath, $"{DateTime.Now}: Bg Task Start\n");
+                    await skillService.RefreshSkillsAsync();
+                    foreach (var skill in skillService.GetSkills())
+                    {
+                        toolRegistry.RegisterTool(new Services.Skills.SkillAdapter(skill));
+                    }
+                    System.IO.File.AppendAllText(logPath, $"{DateTime.Now}: Bg Task End\n");
                 }
-            }).Wait();
+                catch(Exception ex)
+                {
+                    System.IO.File.AppendAllText(logPath, $"{DateTime.Now}: Bg Task Error: {ex}\n");
+                }
+            });
 
             _ = rootFrame.Navigate(typeof(MainPage), e.Arguments);
             
+            System.IO.File.AppendAllText(logPath, $"{DateTime.Now}: Navigated\n");
+
             // Resize Window to be smaller (approx 50%)
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
             var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
@@ -110,9 +137,12 @@ namespace OpenClaw.Windows
             appWindow.Resize(new global::Windows.Graphics.SizeInt32(780, 700));
             
             // Set Window Icon (Manual set required for unpackaged apps)
-            appWindow.SetIcon(System.IO.Path.Combine(AppContext.BaseDirectory, "Assets", "app_icon.ico"));
+            try {
+                appWindow.SetIcon(System.IO.Path.Combine(AppContext.BaseDirectory, "Assets", "app_icon.ico"));
+            } catch {}
             
             window.Activate();
+            System.IO.File.AppendAllText(logPath, $"{DateTime.Now}: Window Activated\n");
 
             // Initialize System Tray
             InitializeSystemTray();
@@ -123,6 +153,8 @@ namespace OpenClaw.Windows
             // Initialize Analytics
             var analytics = Host.Services.GetRequiredService<Services.FirebaseAnalyticsService>();
             _ = analytics.LogEventAsync("app_start");
+
+            System.IO.File.AppendAllText(logPath, $"{DateTime.Now}: Startup Complete\n");
 
             // Check EULA
             await CheckEulaAsync();

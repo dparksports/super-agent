@@ -10,9 +10,45 @@
     CloseButtonText="Close">
 
     <StackPanel Spacing="20" Width="300">
+        <!-- Safety Section -->
+        <StackPanel Spacing="10">
+            <TextBlock Text="🛡️ Safety" Style="{ThemeResource SubtitleTextBlockStyle}" />
+            <ToggleSwitch x:Name="HitlToggle" 
+                          Header="Require Approval for Unsafe Tools" 
+                          OnContent="On" 
+                          OffContent="Off" 
+                          ToolTipService.ToolTip="When ON, the agent will ask for your approval before running scripts, installing packages, browsing, sending messages, etc."/>
+            <TextBlock Text="When off, the agent will still notify you of what it's doing, but won't wait for approval." 
+                       Style="{ThemeResource CaptionTextBlockStyle}" 
+                       Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" 
+                       TextWrapping="Wrap" />
+        </StackPanel>
+
+        <MenuFlyoutSeparator />
+
+        <!-- Agent Guide Section -->
+        <StackPanel Spacing="10">
+            <TextBlock Text="📋 Agent Guide" Style="{ThemeResource SubtitleTextBlockStyle}" />
+            <TextBlock Text="A guide.md file gives the agent rules about what it should and shouldn't do — like a parent setting boundaries." 
+                       Style="{ThemeResource CaptionTextBlockStyle}" 
+                       Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" 
+                       TextWrapping="Wrap" />
+            <Button x:Name="EditGuideButton" 
+                    Content="📝 Edit Agent Guide" 
+                    Click="EditGuideButton_Click"
+                    HorizontalAlignment="Stretch" />
+            <TextBlock x:Name="GuideStatusText" 
+                       Text="" 
+                       Style="{ThemeResource CaptionTextBlockStyle}" 
+                       Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" 
+                       TextWrapping="Wrap" />
+        </StackPanel>
+
+        <MenuFlyoutSeparator />
+
         <!-- Privacy Section -->
         <StackPanel Spacing="10">
-            <TextBlock Text="Privacy" Style="{ThemeResource SubtitleTextBlockStyle}" />
+            <TextBlock Text="🔒 Privacy" Style="{ThemeResource SubtitleTextBlockStyle}" />
             <ToggleSwitch x:Name="AnalyticsToggle" 
                           Header="Share Usage Data" 
                           OnContent="On" 
@@ -28,7 +64,7 @@
 
         <!-- Testing / Debugging Section -->
         <StackPanel Spacing="10">
-            <TextBlock Text="Debugging" Style="{ThemeResource SubtitleTextBlockStyle}" />
+            <TextBlock Text="🐛 Debugging" Style="{ThemeResource SubtitleTextBlockStyle}" />
             <Button x:Name="ResetEulaButton" 
                     Content="Reset EULA acceptance" 
                     Click="ResetEulaButton_Click"

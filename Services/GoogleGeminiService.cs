@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -11,6 +11,40 @@ namespace OpenClaw.Windows.Services;
 
 public class GoogleGeminiService : IAiService
 {
+    private const string SystemPrompt = @"You are Super Agent ðŸ¦¸â€â™‚ï¸, a proactive autonomous AI assistant running as a Windows desktop app.
+
+You have the following tools available:
+
+## Core Tools
+- **get_system_time**: Get current date/time
+- **read_file**: Read file contents from disk
+- **write_file**: Write/create files on disk (âš ï¸ unsafe)
+- **run_powershell**: Execute PowerShell commands (âš ï¸ unsafe)
+- **web_search**: Search the web via DuckDuckGo
+- **read_web_page**: Fetch and read a web page as markdown
+- **read_text_from_image**: Extract text from images (local OCR)
+- **transcribe_audio**: Transcribe audio/video files (local Whisper)
+
+## Autonomous Agent Tools
+- **run_python**: Execute Python code or scripts in a dedicated venv with CUDA 12.8 GPU support (âš ï¸ unsafe)
+- **pip_install**: Install/uninstall/list Python packages. Use 'cuda' to install PyTorch+CUDA (âš ï¸ unsafe)
+- **browse_web**: Open URLs in headless Chromium (Playwright). Supports click, fill, screenshot, JS eval (âš ï¸ unsafe)
+- **voip_call**: Make VoIP calls or send SMS via SIP. Use 'setup_info' for provider setup (âš ï¸ unsafe)
+- **send_message**: Send messages via 90+ platforms (Email, Slack, Discord, Telegram, Teams) using Apprise (âš ï¸ unsafe)
+- **create_skill**: Create new tools/skills at runtime by writing SKILL.md + scripts. Use 'skill_format' for help (âš ï¸ unsafe)
+
+## Behavior Guidelines
+- Be PROACTIVE: suggest helpful actions, anticipate needs, take initiative with safe actions
+- Always explain what you plan to do BEFORE doing it
+- After completing an action, report what happened clearly
+- Chain tools when needed (e.g. write script â†’ pip install deps â†’ run it â†’ report)
+- When you lack a capability, consider using create_skill to teach yourself
+- Prefer local/private solutions over cloud when possible
+- Be transparent about errors and limitations
+
+Made with â¤ï¸ in California";
+
+
     private readonly HttpClient _httpClient;
     private readonly Services.Tools.ToolRegistry? _toolRegistry;
     private string _apiKey;
@@ -109,8 +143,11 @@ public class GoogleGeminiService : IAiService
              };
          }
 
+         var fullSystemPrompt = BuildFullSystemPrompt();
+
          var requestBody = new
          {
+             system_instruction = new { parts = new[] { new { text = fullSystemPrompt } } },
              contents = new[]
              {
                  new { role = "user", parts = new[] { new { text = prompt } } }
@@ -178,12 +215,14 @@ public class GoogleGeminiService : IAiService
                  new { function_declarations = functions } 
              };
          }
+          var fullSystemPrompt = BuildFullSystemPrompt();
 
-         var requestBody = new
-         {
-             contents = history,
-             tools = toolsPayload
-         };
+          var requestBody = new
+          {
+              system_instruction = new { parts = new[] { new { text = fullSystemPrompt } } },
+              contents = history,
+              tools = toolsPayload
+          };
          
          var jsonOptions = new JsonSerializerOptions { DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull };
          var content = new StringContent(JsonSerializer.Serialize(requestBody, jsonOptions), Encoding.UTF8, "application/json");
@@ -229,4 +268,35 @@ public class GoogleGeminiService : IAiService
     }
 
     Task IAiService.RedownloadModelAsync() => Task.CompletedTask;
+
+    /// <summary>
+    /// Builds the full system prompt by combining the base prompt with the user's guide.md if it exists.
+    /// </summary>
+    private string BuildFullSystemPrompt()
+    {
+        var prompt = SystemPrompt;
+
+        try
+        {
+            var guidePath = System.IO.Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "SuperAgent", "guide.md");
+
+            if (System.IO.File.Exists(guidePath))
+            {
+                var guideContent = System.IO.File.ReadAllText(guidePath);
+                if (!string.IsNullOrWhiteSpace(guideContent))
+                {
+                    prompt += "\n\n## Owner's Guide (IMPORTANT â€” follow these rules)\n" + guideContent;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[SystemPrompt] Error loading guide.md: {ex.Message}");
+        }
+
+        return prompt;
+    }
 }
+

@@ -15,6 +15,9 @@ namespace OpenClaw.Windows.Services
 
         static SettingsHelper()
         {
+            var logPath = System.IO.Path.Combine(AppContext.BaseDirectory, "startup_debug.log");
+            try { System.IO.File.AppendAllText(logPath, $"{DateTime.Now}: SettingsHelper Static Ctor Start\n"); } catch {}
+
             if (!IsPackaged())
             {
                 lock (_lock)
@@ -22,6 +25,7 @@ namespace OpenClaw.Windows.Services
                     LoadLocalSettings();
                 }
             }
+            try { System.IO.File.AppendAllText(logPath, $"{DateTime.Now}: SettingsHelper Static Ctor End\n"); } catch {}
         }
 
         private static void Log(string message)

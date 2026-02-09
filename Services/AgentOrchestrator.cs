@@ -140,6 +140,9 @@ namespace OpenClaw.Windows.Services
                 if (response.FunctionCalls != null && response.FunctionCalls.Any())
                 {
                     // For each tool call
+                    // Check HITL setting
+                    bool hitlEnabled = SettingsHelper.Get<bool>("HitlEnabled", true);
+
                     foreach (var call in response.FunctionCalls)
                     {
                         var tool = _toolRegistry.GetTool(call.Name);
@@ -149,39 +152,23 @@ namespace OpenClaw.Windows.Services
                             continue;
                         }
 
-                        // SAFETY CHECK
-                        if (tool.IsUnsafe)
+                        // Always notify the user BEFORE execution (transparency)
+                        var argsPreview = call.JsonArgs.Length > 100 ? call.JsonArgs.Substring(0, 100) + "..." : call.JsonArgs;
+                        yield return $"[Agent] 📋 Planning to use: **{call.Name}** with args: {argsPreview}\n";
+
+                        // SAFETY CHECK — only block if HITL is enabled AND tool is unsafe
+                        if (tool.IsUnsafe && hitlEnabled)
                         {
                             _pendingToolCall = call;
-                            // Add the Model's intent to history (so next time we see it asked)
                             await _db.SaveMessageAsync("Model", "", call.Name); 
                             
                             yield return $"[Agent] ⚠️ APPROVAL REQUIRED: {call.Name}\n";
                             yield return $"[Agent] Type 'yes' to approve or 'no' to deny.\n";
-                            yield break; // STOP execution loop and wait for user input
+                            yield break; // STOP and wait for user input
                         }
                     
-                        yield return $"[Agent]  🛠️ Executing {call.Name}...\n";
-                        await _db.SaveMessageAsync("Model", "", call.Name); // Save tool call attempt (simplified)
-
-                        // 1. Add the Model's Function Call request to history
-                        // Note: Gemini expects the model's turn to preserve the function call id context conceptually,
-                        // or just the structure. 
-                        var modelPart = new GeminiPart 
-                        { 
-                            FunctionCall = new GeminiFunctionCall 
-                            { 
-                                Name = call.Name, 
-                                Args = JsonSerializer.Deserialize<object>(call.JsonArgs) ?? new { } 
-                            } 
-                        };
-                        
-                        // We must append this to the history so Gemini knows it asked for it.
-                        // However, we can't append multiple model parts if they came in one response easily without grouping.
-                        // The simple loop assumes one turn = one response.
-                        // If there are multiple function calls in one response, we should strictly add ONE model content with multiple parts.
-                        // But our AgentResponse model flattens it slightly. Let's assume sequential or grouped.
-                        // Simplified: Create a Model Content for this turn.
+                        yield return $"[Agent] 🛠️ Executing {call.Name}...\n";
+                        await _db.SaveMessageAsync("Model", "", call.Name);
                     }
                     
                     // Add the 'model' turn with function calls to history
